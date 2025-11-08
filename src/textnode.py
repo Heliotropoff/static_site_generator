@@ -3,12 +3,12 @@ from htmlnode import LeafNode
 
 class TextType(Enum):
 
-    PLAIN_TEXT = "text (plain)"
-    BOLD_TEXT = "**Bold text**"
-    ITALIC_TEXT = "_Italic text_"
-    CODE_TEXT = "`Code text`"
-    LINKS = "[anchor text](url)"
-    IMAGES = "![alt text](url)"
+    TEXT = "text (plain)"
+    BOLD = "**Bold text**"
+    ITALIC = "_Italic text_"
+    CODE = "`Code text`"
+    LINK = "[anchor text](url)"
+    IMAGE = "![alt text](url)"
 
 class TextNode():
 
@@ -27,17 +27,17 @@ class TextNode():
 
 def text_node_to_html_node(text_node):
     match text_node.text_type:
-        case TextType.PLAIN_TEXT:
+        case TextType.TEXT:
             return LeafNode(tag = None, value = text_node.text)
-        case TextType.BOLD_TEXT:
+        case TextType.BOLD:
             return LeafNode(tag="b", value=text_node.text)
-        case TextType.ITALIC_TEXT:
+        case TextType.ITALIC:
             return LeafNode(tag="i", value=text_node.text)
-        case TextType.CODE_TEXT:
+        case TextType.CODE:
             return LeafNode(tag="code", value=text_node.text)
-        case TextType.LINKS:
+        case TextType.LINK:
             return LeafNode(tag="a", value=text_node.text, props={"href":text_node.url})
-        case TextType.IMAGES:
+        case TextType.IMAGE:
             return LeafNode(tag="img", value="", props={"src":text_node.url, "alt":text_node.text})
         case _:
             raise Exception("Unknown text node type")

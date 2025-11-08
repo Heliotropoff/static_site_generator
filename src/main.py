@@ -1,7 +1,7 @@
 from textnode import TextNode, TextType
 from htmlnode import HTMLnode
 def main():
-    new_text_node = TextNode("Some text here", TextType.ITALIC_TEXT, "https://www.boot.dev")
+    new_text_node = TextNode("Some text here", TextType.ITALIC, "https://www.boot.dev")
     print(new_text_node)
     new_html_node = HTMLnode("<h1>","Awesome title")
     print(new_html_node)
