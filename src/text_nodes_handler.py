@@ -27,14 +27,30 @@ def split_nodes_image(olds_nodes):
         if node.text_type != TextType.TEXT:
             new_nodes.append(node)
         else:
-            extracted_img_data = extract_markdown_links(node.text)
-            for img_item in extracted_img_data:
-                alt_text = img_item[0]
-                img_url = img_item[1]
-                new_img_node = TextNode(alt_text, TextType.IMAGE, img_url)
-                sections = node.text.split(f"![{alt_text}]({img_url})", 1)
-                print(f"IMG_NODE: {new_img_node}")
-                print(f"SECTION: {sections}")
+            processed_string = node.text
+            while processed_string:
+                extracted_data = extract_markdown_images(processed_string)
+                if extracted_data:
+                    processed_img_item = extracted_data[0]
+                    alt_text = processed_img_item[0]
+                    img_url = processed_img_item[1]
+                    new_img_node = TextNode(alt_text, TextType.IMAGE, img_url)
+                    sections = processed_string.split(f"![{alt_text}]({img_url})", 1)
+                    preceding_section = sections[0]
+                    following_section = sections[1]
+                    if preceding_section:
+                        new_plain_text = TextNode(preceding_section, TextType.TEXT)
+                        new_nodes.append(new_plain_text)
+                    new_nodes.append(new_img_node)
+                    processed_string = following_section
+                    if processed_string == "":
+                        break
+                else:
+                    break
+            if processed_string:
+                new_plain_text = TextNode(processed_string, TextType.TEXT)
+                new_nodes.append(new_plain_text)
+    return new_nodes
 
 
 def split_nodes_link(old_nodes):
@@ -43,11 +59,27 @@ def split_nodes_link(old_nodes):
         if node.text_type != TextType.TEXT:
             new_nodes.append(node)
         else:
-            extracted_link_data = extract_markdown_links(node.text)
-            for link_item in extracted_link_data:
-                anchor_text = link_item[0]
-                anchor_text = link_item[1]
-                new_lin_node = TextNode(anchor_text,TextType.LINK,link_url)
-                sections = node.text.split(f"![{anchor_text}]({anchor_text})", 1)
-                print(f"IMG_NODE: {new_lin_node}")
-                print(f"SECTION: {sections}")
+            processed_string = node.text
+            while processed_string:
+                extracted_data = extract_markdown_links(processed_string)
+                if extracted_data:
+                    processed_link_item = extracted_data[0]
+                    anchor_text = processed_link_item[0]
+                    link_url = processed_link_item[1]
+                    new_link_node = TextNode(anchor_text, TextType.LINK, link_url)
+                    sections = processed_string.split(f"[{anchor_text}]({link_url})", 1)
+                    preceding_section = sections[0]
+                    following_section = sections[1]
+                    if preceding_section:
+                        new_plain_text = TextNode(preceding_section, TextType.TEXT)
+                        new_nodes.append(new_plain_text)
+                    new_nodes.append(new_link_node)
+                    processed_string = following_section
+                    if processed_string == "":
+                        break
+                else:
+                    break
+            if processed_string:
+                new_plain_text = TextNode(processed_string, TextType.TEXT)
+                new_nodes.append(new_plain_text)
+    return new_nodes
