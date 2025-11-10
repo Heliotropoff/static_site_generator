@@ -39,8 +39,8 @@ def block_to_block_type(md_block):
         r"#{1,6} .+": BlockType.HEADING,
         r"```([\s\S]+?)```":BlockType.CODE,
         r">(.+)":BlockType.QUOTE,
-        r"^- (.+)":BlockType.UNORDERED_LIST,
-        r"^\d+\. .+":BlockType.ORDERED_LIST
+        r"- (.+)":BlockType.UNORDERED_LIST,
+        r"\d+\. .+":BlockType.ORDERED_LIST
         }
     block_type = ""
     for pattern in block_patterns:
@@ -61,7 +61,8 @@ def markdown_to_html_node(md_document):
             block_HTML_node = block_to_html_node(block=md_block,block_type=block_type)
             root_children.append(block_HTML_node)
         else:
-            code_text_node = TextNode(text=md_block, text_type=TextType.CODE)
+            stripped_code = md_block.strip("```").lstrip("\n")
+            code_text_node = TextNode(text=stripped_code, text_type=TextType.CODE)
             code_HTML_node = text_node_to_html_node(code_text_node)
             code_block_node = ParentNode(tag="pre", children=[code_HTML_node])
             root_children.append(code_block_node)
@@ -81,7 +82,6 @@ def list_items_to_children(text, block_list_type):
     list_items = []
     for element in list_elements:
         if element != "":
-            #TODO: need regexp to strip list list markers
             if block_list_type == BlockType.UNORDERED_LIST:
                 preformatted_element = re.sub(r"^\s*[-*]\s+", "", element)
             elif block_list_type == BlockType.ORDERED_LIST:
@@ -89,14 +89,14 @@ def list_items_to_children(text, block_list_type):
             else:
                 raise ValueError(f"Type Mismatch: {block_list_type.name} was passed for processing list items")
             stripped_element = preformatted_element.strip()
-            formatted_element = text_to_textnodes(stripped_element)[0]
-            processed_element = text_node_to_html_node(formatted_element)
-            new_item = ParentNode("li", children=[processed_element])
+            formatted_elements = text_to_textnodes(stripped_element)
+            li_parts = []
+            for formatted_element in formatted_elements:
+                processed_element = text_node_to_html_node(formatted_element)
+                li_parts.append(processed_element)
+            new_item = ParentNode("li", children=li_parts)
             list_items.append(new_item)
     return list_items
-
-
-    return processed_list_elements
 
 def get_correct_header_tag(heading_text):
     header_pattern = r"^(#+)"
@@ -120,6 +120,8 @@ def get_correct_header_tag(heading_text):
 
 
 def block_to_html_node(block, block_type):
+    if block_type == BlockType.PARAGRAPH:
+        block = block.replace("\n", " ")
     if block_type != BlockType.UNORDERED_LIST and block_type != BlockType.ORDERED_LIST:
         children = text_to_children(block)
     else:
@@ -128,7 +130,8 @@ def block_to_html_node(block, block_type):
         case BlockType.PARAGRAPH:
             return ParentNode(tag="p",children=children)
         case BlockType.HEADING:
-            h_tag = get_correct_header_tag(block)
+            preformatted_header = re.sub(r"^(#+)", "", block)
+            h_tag = get_correct_header_tag(preformatted_header)
             return ParentNode(tag=h_tag, children=children)
         case BlockType.QUOTE:
             return ParentNode(tag="blockquote", children=children)
@@ -140,10 +143,6 @@ def block_to_html_node(block, block_type):
             raise Exception("Code block or Unknown block type")
 
 
-
-
-
-
 md = """
 This is **bolded** paragraph
 text in a p
@@ -153,5 +152,25 @@ This is another paragraph with _italic_ text and `code` here
 
 """
 
-testo = markdown_to_html_node(md)
-pprint(testo)
+
+# md = """
+# This is **bolded** paragraph
+# text in a p
+# tag here
+
+# This is another paragraph with _italic_ text and `code` here
+
+# """
+# md = """
+# ```
+# This is text that _should_ remain
+# the **same** even with inline stuff
+# ```
+# """
+
+# ms = "<div><pre><code>This is text that _should_ remain\nthe **same** even with inline stuff\n</code></pre></div>"
+# testo = markdown_to_html_node(md)
+# pprint(testo.to_html())
+# pprint(ms)
+
+# print(ms == testo)
