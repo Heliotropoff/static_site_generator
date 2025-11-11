@@ -45,10 +45,28 @@ def generate_page(from_path, template_path, dest_path):
     with open(file=dest_path,mode="w") as new_html:
         new_html.write(new_full_html)
 
+
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+    current_level_content = os.listdir(dir_path_content)
+    # we need to generate page per content file
+    # that means if we see a file we trigger generate page function
+    # if we see a directory we make a recursive call with this new directory
+    if current_level_content:
+        for item in current_level_content:
+            current_path = os.path.join(dir_path_content, item)
+            if os.path.isfile(current_path):
+                #content_path = os.path.join(dir_path_content,item)
+                file_name, _ = os.path.splitext(item)
+                new_file_name = ".".join((file_name, "html"))
+                new_page_path = os.path.join(dest_dir_path, new_file_name)
+                generate_page(from_path=current_path, template_path=template_path, dest_path=new_page_path)
+            else:
+                #new_dir_to_content = os.path.join(dir_path_content, item)
+                new_dest_dir = os.path.join(dest_dir_path, item)
+                os.makedirs(new_dest_dir, exist_ok=True)
+                generate_pages_recursive(dir_path_content=current_path, template_path=template_path, dest_dir_path=new_dest_dir)
+    return
+
+
 #generate_page("./content/index.md","./template.html", "./test/index.html")
-
-
-
-
-
 #copy_static_from_source("./test_source", "./test_dest")
