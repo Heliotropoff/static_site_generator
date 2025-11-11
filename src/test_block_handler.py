@@ -1,5 +1,5 @@
 import unittest
-from block_handler import markdown_to_blocks, block_to_block_type, BlockType, markdown_to_html_node
+from block_handler import markdown_to_blocks, block_to_block_type, BlockType, markdown_to_html_node, extract_title
 
 class TestBlockHandler(unittest.TestCase):
     def test_markdown_to_blocks(self):
@@ -96,3 +96,17 @@ the **same** even with inline stuff
         node = markdown_to_html_node(md)
         html = node.to_html()
         self.assertEqual(html,"<div><pre><code>This is text that _should_ remain\nthe **same** even with inline stuff\n</code></pre></div>",)
+
+    def test_extract_title1(self):
+        md_doc = """
+# TITLE!
+"""
+        new_title = extract_title(md_doc=md_doc)
+        self.assertEqual(new_title, "TITLE!")
+
+    def test_extract_title2(self):
+        md_doc = """
+    # TITLE2 hehe
+"""
+        new_title = extract_title(md_doc=md_doc)
+        self.assertEqual(new_title, "TITLE2 hehe")

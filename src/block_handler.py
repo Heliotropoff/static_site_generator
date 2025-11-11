@@ -142,8 +142,16 @@ def block_to_html_node(block, block_type):
         case _:
             raise Exception("Code block or Unknown block type")
 
+def extract_title(md_doc):
+    title_pattern = r"^\s*#(.+)"
+    title_string = re.search(title_pattern, md_doc).group(0)
+    if title_string is None:
+        raise Exception("No title in the document")
+    stripped_string = re.sub(r"^\s*#","",title_string).strip()
+    return stripped_string
 
 md = """
+# TITLE!!!
 This is **bolded** paragraph
 text in a p
 tag here
@@ -152,7 +160,8 @@ This is another paragraph with _italic_ text and `code` here
 
 """
 
-
+# ttt = extract_title(md)
+# pprint(ttt)
 # md = """
 # This is **bolded** paragraph
 # text in a p
