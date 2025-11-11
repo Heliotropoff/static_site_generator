@@ -1,2 +1,1 @@
-testo = markdown_to_html_node(md)
-pprint(testo.to_html())
+copy_static_from_source("/", "./test")
