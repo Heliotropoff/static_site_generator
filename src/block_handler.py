@@ -169,7 +169,17 @@ This is another paragraph with _italic_ text and `code` here
 # """
 
 # ms = "<div><pre><code>This is text that _should_ remain\nthe **same** even with inline stuff\n</code></pre></div>"
-# testo = markdown_to_html_node(md)
+# ls = """
+# - milk
+# - juice
+# - cat food
+# """
+# ls2 = """
+# 1. milk
+# 2. juice
+# 3. cat food
+# """
+# testo = markdown_to_html_node(ls2)
 # pprint(testo.to_html())
 # pprint(ms)
 
