@@ -30,7 +30,7 @@ def copy_static_from_source(source_dir, destination_dir):
 
     return
 
-def generate_page(from_path, template_path, dest_path):
+def generate_page(from_path, template_path, dest_path, basepath):
     print(f"Generating page from {from_path} to {dest_path} using {template_path}")
     with open(file=from_path, mode="r") as content_doc:
         md_doc_raw = content_doc.read()
@@ -40,13 +40,15 @@ def generate_page(from_path, template_path, dest_path):
     title_string = extract_title(md_doc_raw)
     updated_title = html_template.replace("{{ Title }}", title_string)
     new_full_html = updated_title.replace("{{ Content }}", content_html)
+    new_full_html = new_full_html.replace('href="/', f'href="{basepath}')
+    new_full_html = new_full_html.replace('src="/', f'src="{basepath}')
     dest = os.path.dirname(dest_path)
     os.makedirs(dest, exist_ok=True)
     with open(file=dest_path,mode="w") as new_html:
         new_html.write(new_full_html)
 
 
-def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path, basepath):
     current_level_content = os.listdir(dir_path_content)
     # we need to generate page per content file
     # that means if we see a file we trigger generate page function
@@ -59,12 +61,12 @@ def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
                 file_name, _ = os.path.splitext(item)
                 new_file_name = ".".join((file_name, "html"))
                 new_page_path = os.path.join(dest_dir_path, new_file_name)
-                generate_page(from_path=current_path, template_path=template_path, dest_path=new_page_path)
+                generate_page(from_path=current_path, template_path=template_path, dest_path=new_page_path, basepath=basepath)
             else:
                 #new_dir_to_content = os.path.join(dir_path_content, item)
                 new_dest_dir = os.path.join(dest_dir_path, item)
                 os.makedirs(new_dest_dir, exist_ok=True)
-                generate_pages_recursive(dir_path_content=current_path, template_path=template_path, dest_dir_path=new_dest_dir)
+                generate_pages_recursive(dir_path_content=current_path, template_path=template_path, dest_dir_path=new_dest_dir, basepath=basepath)
     return
 
 
