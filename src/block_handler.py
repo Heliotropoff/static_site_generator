@@ -36,11 +36,11 @@ class BlockType(Enum):
 
 def block_to_block_type(md_block):
     block_patterns = {
-        r"#{1,6} .+": BlockType.HEADING,
+        r"\s*#{1,6} .+": BlockType.HEADING,
         r"```([\s\S]+?)```":BlockType.CODE,
         r">(.+)":BlockType.QUOTE,
-        r"- (.+)":BlockType.UNORDERED_LIST,
-        r"\d+\. .+":BlockType.ORDERED_LIST
+        r"^- (.+)":BlockType.UNORDERED_LIST,
+        r"^\d+\. .+":BlockType.ORDERED_LIST
         }
     block_type = ""
     for pattern in block_patterns:
@@ -99,7 +99,7 @@ def list_items_to_children(text, block_list_type):
     return list_items
 
 def get_correct_header_tag(heading_text):
-    header_pattern = r"^(#+)"
+    header_pattern = r"^\s*(#+)"
     header_size = len(re.match(header_pattern, heading_text).group(0))
     match header_size:
         case 1:
@@ -120,18 +120,24 @@ def get_correct_header_tag(heading_text):
 
 
 def block_to_html_node(block, block_type):
+    #TODO: refactor!!! add helpers
     if block_type == BlockType.PARAGRAPH:
         block = block.replace("\n", " ")
-    if block_type != BlockType.UNORDERED_LIST and block_type != BlockType.ORDERED_LIST:
         children = text_to_children(block)
-    else:
+    if block_type == BlockType.HEADING:
+        preformatted_header = re.sub(r"^\s*(#+)", "", block).strip()
+        children = text_to_children(preformatted_header)
+    if block_type == BlockType.QUOTE:
+        preformatted_header = re.sub(r"\s*(>+)", "", block).strip()
+        children = text_to_children(preformatted_header)
+    if block_type == BlockType.UNORDERED_LIST or block_type == BlockType.ORDERED_LIST:
         children = list_items_to_children(text=block, block_list_type=block_type)
     match block_type:
         case BlockType.PARAGRAPH:
             return ParentNode(tag="p",children=children)
         case BlockType.HEADING:
-            preformatted_header = re.sub(r"^(#+)", "", block)
-            h_tag = get_correct_header_tag(preformatted_header)
+            h_tag = get_correct_header_tag(block)
+
             return ParentNode(tag=h_tag, children=children)
         case BlockType.QUOTE:
             return ParentNode(tag="blockquote", children=children)
@@ -144,21 +150,21 @@ def block_to_html_node(block, block_type):
 
 def extract_title(md_doc):
     title_pattern = r"^\s*#(.+)"
-    title_string = re.search(title_pattern, md_doc).group(0)
+    title_string = re.search(title_pattern, md_doc)
     if title_string is None:
         raise Exception("No title in the document")
-    stripped_string = re.sub(r"^\s*#","",title_string).strip()
+    stripped_string = title_string.group().lstrip("#").strip()
     return stripped_string
 
-md = """
-# TITLE!!!
-This is **bolded** paragraph
-text in a p
-tag here
+# md = """
+# # TITLE!!!
+# This is **bolded** paragraph
+# text in a p
+# tag here
 
-This is another paragraph with _italic_ text and `code` here
+# This is another paragraph with _italic_ text and `code` here
 
-"""
+# """
 
 # ttt = extract_title(md)
 # pprint(ttt)

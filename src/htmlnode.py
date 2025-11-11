@@ -11,7 +11,7 @@ class HTMLnode:
             return ""
         result = ""
         for tag, value in self.props.items():
-            result += f" {tag}=\"{value}\""
+            result += f"{tag}=\"{value}\""
         return result
     def __repr__(self):
         return f"HTMLnode({self.tag}, {self.value}, {self.children}, {self.props})"
@@ -25,7 +25,10 @@ class LeafNode(HTMLnode):
             raise ValueError
         if self.tag is None:
             return self.value
-        opening_tag = f"<{self.tag}>"
+        if self.props:
+            opening_tag = f"<{self.tag} {self.props_to_html()}>"
+        else:
+            opening_tag = f"<{self.tag}>"
         closing_tag = f"</{self.tag}>"
         element = opening_tag + self.value + closing_tag
         return element
